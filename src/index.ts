@@ -1,48 +1,47 @@
-/**
- * 
- * function name: markWordleGuess
- * input: guess(string) and hiddenTarget(string)
- * return something of the type below
- * interface MarkedGuess {
-    inCorrectLocation: string[],
-    inWord: string[],
-    notInWord: string[]
-}
- * 
- * example 1: hiddenTarget is 'train'
- * a guess of 'ramps' should return
- * 
- * example 2: hiddenTarget is 'party'
- * a guess of 'apple': what should happen
- * 1. a is not in the correct location but is in word
- * 2. the first p is not in the correct location but is in the word
- * 3. 
- * 
- * {
- *  inCorrectLocation: [],
-    inWord:['r', 'a'],
-    notInWord: ['m', 'p', 's']
- * }
- * 
- * pseudocode:
- * 
- * create a new variable called occurrencesInTarget = {actual occurences} ***helper function
- * create a new variable called correctOccurrencesInGuess = {}
- * create new variable called markedGuess = {}
- * for each letter in guess
- *  if correctOccurrencesInGuess.letter < occurrencesInTarget.letter AND letter is in the correct location*** helper function
- *      then add letter to markedGuess.inCorrectLocation
- *      and add letter occurrence to correctOccurrencesInGuess
- *  else correctOccurrencesInGuess.letter < occurrencesInTarget.letter AND if letter is in the word*** helper function
- *      then add letter to markedGuess.inWord
- *      and add letter occurrence to correctOccurrencesInGuess
- *  else
- *      add letter to markedGuess.notInWord
- *  
- */
+import countOccurrences from "./helpers/countOccurrences";
+import isLetterInSamePosition from "./helpers/isLetterInSamePosition";
+import isLetterInWord from "./helpers/isLetterInWord";
+import MarkedGuess from "./interfaces/markedGuess";
+import occurrencesInterface from "./interfaces/occurrencesInterface";
 
-interface MarkedGuess {
-    inCorrectLocation: string[],
-    inWord: string[],
-    notInWord: string[]
+function markWordleGuess(guess: string, hiddenTarget: string): MarkedGuess {
+  const occurrencesInTarget = countOccurrences(hiddenTarget);
+  const correctOccurrencesInGuess: occurrencesInterface = {};
+
+  const lowerCaseGuess = guess.toLowerCase();
+  const lowerCaseHiddenTarget = hiddenTarget.toLowerCase();
+
+  lowerCaseGuess.split("").forEach((letter) => {
+    correctOccurrencesInGuess[letter] = 0;
+  });
+
+  const markedGuess: MarkedGuess = {
+    inCorrectLocation: [],
+    inWord: [],
+    notInWord: [],
+  };
+
+  const guessLettersArray = lowerCaseGuess.split("").entries();
+
+  for (const [index, letter] of guessLettersArray) {
+    if (
+      isLetterInSamePosition(index, letter, lowerCaseHiddenTarget) &&
+      correctOccurrencesInGuess[letter] < occurrencesInTarget[letter]
+    ) {
+      markedGuess.inCorrectLocation.push([letter, index]);
+      correctOccurrencesInGuess[letter] += 1;
+    } else if (
+      isLetterInWord(letter, lowerCaseHiddenTarget) &&
+      correctOccurrencesInGuess[letter] < occurrencesInTarget[letter]
+    ) {
+      markedGuess.inWord.push([letter, index]);
+      correctOccurrencesInGuess[letter] += 1;
+    } else {
+      markedGuess.notInWord.push([letter, index]);
+    }
+  }
+
+  return markedGuess;
 }
+
+export default markWordleGuess;
